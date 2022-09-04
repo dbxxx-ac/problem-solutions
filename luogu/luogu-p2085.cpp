@@ -1,20 +1,22 @@
 /*
  * @Author: crab-in-the-northeast 
- * @Date: 2021-02-18 22:36:26 
+ * @Date: 2022-08-07 19:37:11 
  * @Last Modified by: crab-in-the-northeast
- * @Last Modified time: 2021-02-18 22:51:45
+ * @Last Modified time: 2022-08-07 19:58:41
  */
 #include <bits/stdc++.h>
-inline long long read() {
-    long long x = 0;
+#define int long long
+
+inline int read() {
+    int x = 0;
     bool flag = true;
     char ch = getchar();
-    while (ch < '0' || ch > '9') {
+    while (!isdigit(ch)) {
         if (ch == '-')
             flag = false;
         ch = getchar();
     }
-    while (ch >= '0' && ch <= '9') {
+    while (isdigit(ch)) {
         x = (x << 1) + (x << 3) + ch - '0';
         ch = getchar();
     }
@@ -24,51 +26,40 @@ inline long long read() {
 }
 
 const int maxn = 10005;
-const int maxm = 10005;
 
-struct func_kind {
-    long long a, b, c;
-    long long calc(long long x) {
-        return this -> a * x * x + this -> b * x + this -> c;
-    }
-}p[maxn];
+int a[maxn], b[maxn], c[maxn];
 
 struct func {
-    int idx;
-    long long x;
-    long long v;
-    const bool operator < (const func &b) const {
-        return this -> v > b.v;
-    }
-    long long calc() {
-        return p[this -> idx].calc(this -> x);
+    int id;
+    int x;
+};
+
+inline int calc(int id, int x) {
+    return a[id] * x * x + b[id] * x + c[id];
+}
+
+struct cmp {
+    bool operator () (func a, func b) {
+        return calc(a.id, a.x) > calc(b.id, b.x);
     }
 };
 
-std :: priority_queue <func> pq;
+std :: priority_queue <func, std :: vector <func>, cmp> q;
 
-int main() {
+signed main() {
     int n = read(), m = read();
     for (int i = 1; i <= n; ++i) {
-        p[i].a = read();
-        p[i].b = read();
-        p[i].c = read();
-        func tmp;
-        tmp.idx = i;
-        tmp.x = 1;
-        tmp.v = tmp.calc();
-        pq.push(tmp);
+        a[i] = read();
+        b[i] = read();
+        c[i] = read();
+        q.push((func){i, 1});
     }
 
-    for (int i = 1; i <= m; ++i) {
-        func now = pq.top();
-        std :: printf("%lld ", now.v);
-        func nxt;
-        nxt.idx = now.idx;
-        nxt.x = now.x + 1;
-        nxt.v = nxt.calc();
-        pq.pop();
-        pq.push(nxt);
+    while (m--) {
+        int id = q.top().id, x = q.top().x;
+        q.pop();
+        printf("%lld ", calc(id, x));
+        q.push((func){id, x + 1});
     }
 
     return 0;

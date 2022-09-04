@@ -1,60 +1,86 @@
 /*
  * @Author: crab-in-the-northeast 
- * @Date: 2020-11-02 20:22:13 
+ * @Date: 2022-08-15 17:38:44 
  * @Last Modified by: crab-in-the-northeast
- * @Last Modified time: 2020-11-02 20:44:31
+ * @Last Modified time: 2022-08-15 18:16:46
  */
-#include <iostream>
-#include <cstdio>
-#include <cmath>
-#include <algorithm>
+#include <bits/stdc++.h>
 
-const int maxn = 10005;
-struct point {
-    double x, y;
-    const bool operator < (const point &b) {
-        return this -> x == b.x ? this -> y < b.y : this -> x < b.x;
+inline int read() {
+    int x = 0;
+    bool flag = true;
+    char ch = getchar();
+    while (!isdigit(ch)) {
+        if (ch == '-')
+            flag = false;
+        ch = getchar();
     }
-}a[maxn];
-
-int update[maxn];
-
-bool cmp_for_update(const int &u, const int &v) {
-    return a[u].y < a[v].y;
+    while (isdigit(ch)) {
+        x = (x << 1) + (x << 3) + ch - '0';
+        ch = getchar();
+    }
+    if(flag)
+        return x;
+    return ~(x - 1);
 }
 
-double getdis(int u, int v) {
-    return sqrt((a[u].x - a[v].x) * (a[u].x - a[v].x) + (a[u].y - a[v].y) * (a[u].y - a[v].y));
+const int maxn = 10005;
+const int inf = 0x3f3f3f3f;
+
+struct node {
+    double x, y;
+}a[maxn];
+
+inline double min(double a, double b) {
+    return a < b ? a : b;
+}
+
+inline double fabs(double x) {
+    return x > 0 ? x : -x;
+}
+
+int ner[maxn];
+
+inline double dis(int p, int q) {
+    return hypot(a[p].x - a[q].x, a[p].y - a[q].y);
 }
 
 double merge(int l, int r) {
-    double dis = 1 << 15;
     if (l == r)
-        return dis;
+        return inf;
     if (l + 1 == r)
-        return getdis(l, r);
+        return dis(l, r);
+    
+    int mid = (l + r) >> 1;
+    double d = min(merge(l, mid), merge(mid + 1, r));
 
-    int mid = l + r >> 1;
-    double disl = merge(l, mid), disr = merge(mid + 1, r);
-
-    dis = std :: min(disl, disr);
     int cnt = 0;
     for (int i = l; i <= r; ++i)
-        if (fabs(a[i].x - a[mid].x) <= dis)
-            update[++cnt] = i;
-    std :: sort(update + 1, update + 1 + cnt, cmp_for_update);
+        if (fabs(a[mid].x - a[i].x) < d)
+            ner[++cnt] = i;
+    
+    std :: sort(ner + 1, ner + 1 + cnt, [](int x, int y) {
+        return a[x].y < a[y].y;
+    });
+
     for (int i = 1; i <= cnt; ++i)
-        for (int j = i + 1; j <= cnt && a[update[j]].y - a[update[i]].y < dis; ++j)
-            dis = std :: min(dis, getdis(update[i], update[j]));
-    return dis;
+        for (int j = i + 1; j <= cnt && a[ner[j]].y - a[ner[i]].y < d; ++j) {
+            d = min(d, dis(ner[i], ner[j]));
+        }
+    
+    return d;
 }
 
 int main() {
-    int n;
-    std :: scanf("%d", &n);
-    for (int i = 1; i <= n; ++i)
-        std :: scanf("%lf %lf", &a[i].x, &a[i].y);
-    std :: sort(a + 1, a + 1 + n);
-    std :: printf("%.4lf\n", merge(1, n));
+    int n = read();
+    for (int i = 1; i <= n; ++i) {
+        scanf("%lf%lf", &a[i].x, &a[i].y);
+    }
+
+    std :: sort(a + 1, a + 1 + n, [](node x, node y) {
+        return x.x < y.x;
+    });
+
+    printf("%.4f\n", merge(1, n));
     return 0;
 }

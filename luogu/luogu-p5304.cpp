@@ -2,7 +2,7 @@
  * @Author: crab-in-the-northeast 
  * @Date: 2022-07-27 18:42:55 
  * @Last Modified by: crab-in-the-northeast
- * @Last Modified time: 2022-07-27 20:36:04
+ * @Last Modified time: 2022-07-27 20:39:35
  */
 #include <bits/stdc++.h>
 inline int read() {
@@ -237,7 +237,6 @@ int main() {
     }
     return 0;
 }
-
 
 2
 6 7 3

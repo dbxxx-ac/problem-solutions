@@ -155,14 +155,14 @@ int main() {
         opt(i, 3, 400);
     }
 }
- 
+
 /*
 2 1 10
 Rubyonly B9 A99 PASS
 SuZipei C2 D2 A49
 E49 DOUBLE PASS A19 A49 A99 A99 A99 A99 A99
- 
- 
+
+
 3 2 25
 Su A9 A19 B1
 Ka TURN A9 C2
