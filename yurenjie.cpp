@@ -1,45 +1,33 @@
-/*
- * @Author: crab-in-the-northeast 
- * @Date: 2022-09-02 21:51:51 
- * @Last Modified by: crab-in-the-northeast
- * @Last Modified time: 2022-09-02 21:59:05
- */
+#define rep(a,b,c) for(int a=b;a<=c;a++)
+#define per(a,b,c) for(int c=b;c>=a;c--)
+#define fe(a,n) for(int a=1;a<=n;a++)
+#define ef(a,n) for(int a=n;a>=1;a--)
+#define pb push_back
 #include <bits/stdc++.h>
-inline int read() {
-    int x = 0;
-    bool flag = true;
-    char ch = getchar();
-    while (!isdigit(ch)) {
-        if (ch == '-')
-            flag = false;
-        ch = getchar();
-    }
-    while (isdigit(ch)) {
-        x = (x << 1) + (x << 3) + ch - '0';
-        ch = getchar();
-    }
-    if(flag)
-        return x;
-    return ~(x - 1);
+using namespace std;
+const int N=5e5+5;
+vector<int> v[N];
+int dfn[N],low[N],tot=0;
+stack<int> stk;
+vector<vector<int>> anss;
+void tarjan(int u,int fa){
+    bool f=0;
+    dfn[u]=low[u]=++tot;
+    if(u==fa&&v[u].empty()){anss.pb({u});return;}
+    stk.push(u);
+    for(auto i:v[u]){
+        if(!dfn[i]){tarjan(i,u);low[u]=min(low[u],low[i]);
+        if(low[i]>dfn[u]){int l;vector<int> vi;do{l=stk.top();vi.pb(l);stk.pop();}while(l!=i);anss.pb(vi);}}
+        else if(i!=fa||f) low[u]=min(low[u],dfn[i]);
+        if(i==fa)f=1;
+    }if(u==fa){int l;vector<int> vi;do{l=stk.top();vi.pb(l);stk.pop();}while(l!=u);anss.pb(vi);}
 }
-
-const int maxn = 55;
-int f[maxn];
-
-int main() {
-    int a = read(), b = read(), n = read();
-    f[1] = f[2] = 1;
-    int r = 0;
-    for (int i = 3; i <= 53; ++i) {
-        f[i] = (a * f[i - 1] + b * f[i - 2]) % 7;
-        if (f[i] == 1 && f[i - 1] == 1) {
-            r = i - 2;
-            break;
-        }
+int main(){
+    int n,m;cin>>n>>m;
+    fe(i,m){
+        int x,y;cin>>x>>y;if(x==y)continue;v[x].pb(y);v[y].pb(x);
     }
-
-    // printf("%d\n", r);
-    int x = n % r;
-    printf("%d\n", f[x ? x : r]);
-    return 0;
+    fe(i,n){if(!dfn[i]){tarjan(i,i);}}
+    cout<<anss.size()<<endl;
+    for(auto i:anss){cout<<i.size()<<' ';for(auto j:i)cout<<j<<' ';cout<<endl;}
 }

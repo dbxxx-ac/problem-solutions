@@ -59,7 +59,7 @@ inline void ghash(int id) {
 int main() {
     n = read();
     l = read();
-    n -= read() * 0; // 相当于扔掉这个数
+    read(); // 相当于扔掉这个数
 
     for (int i = 1; i <= n; ++i) {
         scanf("%s", a[i] + 1);
