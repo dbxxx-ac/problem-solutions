@@ -1,81 +1,63 @@
 /*
  * @Author: crab-in-the-northeast 
- * @Date: 2022-07-13 00:02:25 
+ * @Date: 2023-03-03 23:29:51 
  * @Last Modified by: crab-in-the-northeast
- * @Last Modified time: 2022-07-13 00:11:22
+ * @Last Modified time: 2023-03-03 23:36:42
  */
 #include <bits/stdc++.h>
-
 inline int read() {
     int x = 0;
-    bool flag = true;
+    bool f = true;
     char ch = getchar();
-    while (ch < '0' || ch > '9') {
+    for (; !isdigit(ch); ch = getchar())
         if (ch == '-')
-            flag = false;
-        ch = getchar();
-    }
-    while (ch >= '0' && ch <= '9') {
+            f = false;
+    for (; isdigit(ch); ch = getchar())
         x = (x << 1) + (x << 3) + ch - '0';
-        ch = getchar();
-    }
-    if(flag) return x;
-    return ~(x - 1);
+    return f ? x : (~(x - 1));
 }
 
-const int maxn = 1e5 + 5;
-const int maxm = 2e5 + 5;
+const int maxn = (int)1e5 + 5;
+typedef std :: pair <int, int> pii;
 
-int head[maxn];
-struct edge {
-    int to, nxt, w;
-}e[maxm];
-int ecnt = 0;
-
-inline void add_edge(int u, int v, int w) {
-    e[++ecnt].to = v;
-    e[ecnt].w = w;
-    e[ecnt].nxt = head[u];
-    head[u] = ecnt;
-}
-
-int n, m, s;
-std :: priority_queue <std :: pair <int, int> > q;
+std :: vector <pii> G[maxn];
 
 int dis[maxn];
 
-void dijkstra() {
-    q.push(std :: make_pair(0, s));
+inline void dijkstra(int s) {
+    std :: priority_queue <pii> q;
+    q.push({0, s});
+    std :: memset(dis, 0x3f, sizeof(dis));
     dis[s] = 0;
 
     while (!q.empty()) {
         int d = q.top().first, u = q.top().second;
         q.pop();
-        if (d + dis[u] != 0)
+        if (d + dis[u])
             continue;
-        for (int i = head[u]; i; i = e[i].nxt) {
-            int v = e[i].to, w = e[i].w;
+        
+        for (pii e : G[u]) {
+            int v = e.first, w = e.second;
             if (dis[v] > dis[u] + w) {
                 dis[v] = dis[u] + w;
-                q.push(std :: make_pair(-dis[v], v));
+                q.push({-dis[v], v});
             }
         }
     }
 }
 
 int main() {
-    n = read();
-    m = read();
-    s = read();
-    for (int _ = 1; _ <= m; ++_) {
+    int n = read(), m = read(), s = read();
+    while (m--) {
         int u = read(), v = read(), w = read();
-        add_edge(u, v, w);
+        G[u].push_back({v, w});
     }
 
-    std :: memset(dis, 0x3f, sizeof(dis));
-    dijkstra();
-    for (int i = 1; i <= n; ++i)
-        printf("%d ", dis[i]);
+    dijkstra(s);
+
+    for (int u = 1; u <= n; ++u)
+        printf("%d ", dis[u]);
     puts("");
+
     return 0;
 }

@@ -1,45 +1,65 @@
-#include <cstdio>
-int a[500005];
-int a1[500005];
-long long num,n;
-
-void merge(int start,int mid,int end)
-{
-    int k=start,k1=start,k2=mid+1;
-    while(k1<=mid&&k2<=end)
-    {
-        if(a[k1]<=a[k2])
-            a1[k++]=a[k1++];
-        else
-        {
-            a1[k++]=a[k2++];
-            num+=mid+1-k1;
-        }
+/*
+ * @Author: crab-in-the-northeast 
+ * @Date: 2022-10-20 11:15:09 
+ * @Last Modified by: crab-in-the-northeast
+ * @Last Modified time: 2022-10-20 11:30:05
+ */
+#include <bits/stdc++.h>
+#define int long long
+inline int read() {
+    int x = 0;
+    bool flag = true;
+    char ch = getchar();
+    while (!isdigit(ch)) {
+        if (ch == '-')
+            flag = false;
+        ch = getchar();
     }
-    while(k1<=mid)
-        a1[k++]=a[k1++];
-    while(k2<=end)
-        a1[k++]=a[k2++];
-    for(int i=start;i<=end;i++)
-        a[i]=a1[i];
+    while (isdigit(ch)) {
+        x = (x << 1) + (x << 3) + ch - '0';
+        ch = getchar();
+    }
+    if(flag)
+        return x;
+    return ~(x - 1);
+}
+inline int lowbit(int x) {
+    return x & (-x);
 }
 
-void merge_sort(int l,int r)
-{
-    if(l==r) return ;
-    int mid=(l+r)/2;
-    merge_sort(l,mid);
-    merge_sort(mid+1,r);
-    merge(l,mid,r);
+const int maxn = (int)5e5 + 5;
+
+int a[maxn], au[maxn], c[maxn];
+
+int n;
+inline void add(int x, int v) {
+    for (; x <= n; x += lowbit(x))
+        c[x] += v;
 }
 
-int main()
-{
-    int i;
-    scanf("%lld",&n);
-    for(i=1;i<=n;i++)
-        scanf("%d",&a[i]);
-    merge_sort(1,n);
-    printf("%lld",num);
+inline int get(int x) {
+    int sum = 0;
+    for (; x; x -= lowbit(x))
+        sum += c[x];
+    return sum;
+}
+
+signed main() {
+    n = read();
+    for (int i = 1; i <= n; ++i)
+        a[i] = read();
+    
+    std :: copy(a + 1, a + 1 + n, au + 1);
+    std :: sort(au + 1, au + 1 + n);
+    auto en = std :: unique(au + 1, au + 1 + n);
+
+    int ans = 0;
+    for (int i = n; i; --i) {
+        int x = std :: lower_bound(au + 1, en, a[i]) - au;
+        ans += get(x - 1);
+        add(x, 1);
+    }
+
+    printf("%lld\n", ans);
     return 0;
 }

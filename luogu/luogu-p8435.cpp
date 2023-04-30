@@ -1,73 +1,71 @@
 /*
  * @Author: crab-in-the-northeast 
- * @Date: 2022-10-04 14:11:52 
+ * @Date: 2023-02-27 08:11:53 
  * @Last Modified by: crab-in-the-northeast
- * @Last Modified time: 2022-10-05 03:31:48
+ * @Last Modified time: 2023-02-27 08:29:23
  */
 #include <bits/stdc++.h>
-
 inline int read() {
     int x = 0;
-    bool flag = true;
+    bool f = true;
     char ch = getchar();
-    while (!isdigit(ch)) {
+    for (; !isdigit(ch); ch = getchar())
         if (ch == '-')
-            flag = false;
-        ch = getchar();
-    }
-    while (isdigit(ch)) {
+            f = false;
+    for (; isdigit(ch); ch = getchar())
         x = (x << 1) + (x << 3) + ch - '0';
-        ch = getchar();
-    }
-    if(flag)
-        return x;
-    return ~(x - 1);
+    return f ? x : (~(x - 1));
+}
+inline bool gmi(int &a, int b) {
+    return b < a ? a = b, true : false;
 }
 
 const int maxn = (int)5e5 + 5;
 
 std :: vector <int> G[maxn];
-
-int dfn[maxn], low[maxn], times;
+std :: vector <int> T[maxn << 1];
 std :: stack <int> s;
 
-inline bool gmi(int &a, int b) {
-    return b < a ? a = b, true : false;
+int dfn[maxn], low[maxn], times = 0, p = 0;
+
+inline void dda_edge(int u, int v) {
+    T[u].push_back(v);
+    T[v].push_back(u);
 }
 
-std :: vector <int> vcc[maxn];
-int vnt = 0;
+int n;
+void tarjan(int u) {
+    if (!G[u].size()) {
+        ++p;
+        return dda_edge(u, n + p);
+    }
 
-void tarjan(int u, int fa) {
     dfn[u] = low[u] = ++times;
     s.push(u);
 
     for (int v : G[u]) {
         if (!dfn[v]) {
-            tarjan(v, u);
+            tarjan(v);
             gmi(low[u], low[v]);
-            if (low[v] >= dfn[u]) {
-                ++vnt;
-                while (!s.empty()) {
+            if (low[v] == dfn[u]) {
+                ++p;
+                dda_edge(u, n + p);
+                for (; ;) {
                     int x = s.top();
                     s.pop();
-                    vcc[vnt].push_back(x);
+                    dda_edge(x, n + p);
                     if (x == v)
                         break;
                 }
-                vcc[vnt].push_back(u);
             }
-        } else if (v != fa)
+        } else
             gmi(low[u], dfn[v]);
-    }
-
-    if (fa == 0 && G[u].empty()) {
-        vcc[++vnt].push_back(u);
     }
 }
 
 int main() {
-    int n = read(), m = read();
+    n = read();
+    int m = read();
     while (m--) {
         int u = read(), v = read();
         if (u == v)
@@ -78,14 +76,14 @@ int main() {
 
     for (int u = 1; u <= n; ++u)
         if (!dfn[u])
-            tarjan(u, 0);
-    
-    printf("%d\n", vnt);
+            tarjan(u);
 
-    for (int i = 1; i <= vnt; ++i) {
-        printf("%d ", (int)vcc[i].size());
-        for (int u : vcc[i])
-            printf("%d ", u);
+    printf("%d\n", p);
+    for (int i = 1; i <= p; ++i) {
+        int u = n + i;
+        printf("%d ", (int)T[u].size());
+        for (int v : T[u])
+            printf("%d ", v);
         puts("");
     }
 

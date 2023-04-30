@@ -1,53 +1,55 @@
 /*
  * @Author: crab-in-the-northeast 
- * @Date: 2020-11-04 13:08:42 
+ * @Date: 2022-10-30 22:00:55 
  * @Last Modified by: crab-in-the-northeast
- * @Last Modified time: 2020-11-04 13:27:02
+ * @Last Modified time: 2022-10-30 22:07:07
  */
-#include <iostream>
-#include <cstdio>
-#include <cmath>
-
-const int maxn = 100005;
-const int maxlogn = 25;
-
+#include <bits/stdc++.h>
 inline int read() {
+    int x = 0;
+    bool flag = true;
     char ch = getchar();
-    int x = 0, f = 1;
-    while (ch < '0' || ch > '9') {
+    while (!isdigit(ch)) {
         if (ch == '-')
-            f = -1;
+            flag = false;
         ch = getchar();
     }
-    while (ch >= '0' && ch <= '9') {
-        x = x * 10 + ch - '0';
+    while (isdigit(ch)) {
+        x = (x << 1) + (x << 3) + ch - '0';
         ch = getchar();
     }
-    return x * f;
+    if(flag)
+        return x;
+    return ~(x - 1);
 }
+
+const int maxn = (int)1e5 + 5;
+const int mlgn = 25;
+const int maxm = (int)2e6 + 5;
+
+int lg[maxn];
+int st[maxn][mlgn];
 
 inline int max(int a, int b) {
     return a > b ? a : b;
 }
 
-int Max[maxn][maxlogn];
-
-int query(int l, int r) {
-    int k = log2((double)(r - l + 1));
-    return max(Max[l][k], Max[r - (1 << k) + 1][k]);
-}
-
 int main() {
     int n = read(), m = read();
     for (int i = 1; i <= n; ++i)
-        Max[i][0] = read();
-    for (int j = 1; j <= maxlogn; ++j)
-        for (int i = 1; i <= n - (1 << j) + 1; ++i)
-            Max[i][j] = max(Max[i][j - 1], Max[i + (1 << (j - 1))][j - 1]);
+        st[i][0] = read();
+    
+    for (int i = 2; i <= n; ++i)
+        lg[i] = lg[i >> 1] + 1;
+    
+    for (int j = 1; j <= lg[n]; ++j)
+        for (int i = 1; i + (1 << j) - 1 <= n; ++i)
+            st[i][j] = max(st[i][j - 1], st[i + (1 << (j - 1))][j - 1]);
     
     while (m--) {
         int l = read(), r = read();
-        std :: printf("%d\n", query(l, r));
+        int s = lg[r - l + 1];
+        printf("%d\n", max(st[l][s], st[r - (1 << s) + 1][s]));
     }
 
     return 0;

@@ -1,67 +1,67 @@
 /*
  * @Author: crab-in-the-northeast 
- * @Date: 2021-02-23 10:26:57 
+ * @Date: 2022-10-20 10:37:44 
  * @Last Modified by: crab-in-the-northeast
- * @Last Modified time: 2021-02-23 10:56:39
+ * @Last Modified time: 2022-10-20 10:50:53
  */
 #include <bits/stdc++.h>
 inline int read() {
     int x = 0;
     bool flag = true;
     char ch = getchar();
-    while (ch < '0' || ch > '9') {
+    while (!isdigit(ch)) {
         if (ch == '-')
             flag = false;
         ch = getchar();
     }
-    while (ch >= '0' && ch <= '9') {
+    while (isdigit(ch)) {
         x = (x << 1) + (x << 3) + ch - '0';
         ch = getchar();
     }
-    if (flag)
+    if(flag)
         return x;
     return ~(x - 1);
 }
-
-const int maxn = 500005;
-int n;
-int d[maxn << 2];
-
 inline int lowbit(int x) {
     return x & (-x);
 }
 
-void update(int x, int k) {
-    for (int i = x; i <= n; i += lowbit(i))
-        d[i] += k;
+const int maxn = (int)5e5 + 5;
+
+int c[maxn];
+
+int n;
+inline void add(int x, int v) {
+    for (; x <= n; x += lowbit(x))
+        c[x] += v;
+    return ;
 }
 
-int getsum(int x) {
+inline int get(int x) {
     int sum = 0;
-    for (int i = x; i > 0; i -= lowbit(i))
-        sum += d[i];
+    for (; x; x -= lowbit(x))
+        sum += c[x];
     return sum;
 }
 
 int main() {
     n = read();
     int m = read();
-    int lst = 0, now;
     for (int i = 1; i <= n; ++i) {
-        now = read();
-        update(i, now - lst);
-        lst = now;
+        int x = read();
+        add(i, x);
+        add(i + 1, -x);
     }
 
     while (m--) {
-        int op = read();
-        if (op == 1) {
-            int x = read(), y = read(), k = read();
-            update(x, k);
-            update(y + 1, -k);
+        int o = read();
+        if (o == 1) {
+            int l = read(), r = read(), x = read();
+            add(l, x);
+            add(r + 1, -x);
         } else {
             int x = read();
-            printf("%d\n", getsum(x));
+            printf("%d\n", get(x));
         }
     }
 

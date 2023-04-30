@@ -1,106 +1,123 @@
 /*
  * @Author: crab-in-the-northeast 
- * @Date: 2021-02-26 10:35:03 
+ * @Date: 2023-03-03 23:17:15 
  * @Last Modified by: crab-in-the-northeast
- * @Last Modified time: 2021-02-26 11:14:11
+ * @Last Modified time: 2023-03-03 23:25:39
  */
 #include <bits/stdc++.h>
-inline long long read() {
-    long long x = 0;
-    bool flag = true;
+#define int long long
+inline int read() {
+    int x = 0;
+    bool f = true;
     char ch = getchar();
-    while (ch < '0' || ch > '9') {
+    for (; !isdigit(ch); ch = getchar())
         if (ch == '-')
-            flag = false;
-        ch = getchar();
-    }
-    while (ch >= '0' && ch <= '9') {
+            f = false;
+    for (; isdigit(ch); ch = getchar())
         x = (x << 1) + (x << 3) + ch - '0';
-        ch = getchar();
-    }
-    if (flag)
-        return x;
-    return ~(x - 1);
+    return f ? x : (~(x - 1));
 }
-
-const int maxn = 100005;
-int n;
-long long a[maxn], d[maxn << 2], laz[maxn << 2];
-
-inline int lson(int p) {
+inline int ls(int p) {
     return p << 1;
 }
-
-inline int rson(int p) {
-    return (p << 1) | 1;
+inline int rs(int p) {
+    return p << 1 | 1;
 }
 
-void build(int l, int r, int p) {
+const int maxn = (int)1e5 + 5;
+
+struct node {
+    int sum, l, r;
+} t[maxn << 2];
+
+int laz[maxn << 2];
+
+inline node con(node lef, node rgt) {
+    return (node) {
+        lef.sum + rgt.sum,
+        lef.l,
+        rgt.r
+    };
+}
+
+inline void up(int p) {
+    t[p] = con(t[ls(p)], t[rs(p)]);
+}
+
+inline void tag(int p, int v) {
+    t[p].sum += v * (t[p].r - t[p].l + 1);
+    laz[p] += v;
+}
+
+inline void down(int p) {
+    if (!laz[p])
+        return ;
+    tag(ls(p), laz[p]);
+    tag(rs(p), laz[p]);
+    laz[p] = 0;
+}
+
+void build(int p, int l, int r) {
     if (l == r) {
-        d[p] = a[l];
+        t[p].sum = read();
+        t[p].l = t[p].r = l;
         return ;
     }
-    int mid = l + r >> 1;
-    build(l, mid, lson(p));
-    build(mid + 1, r, rson(p));
-    d[p] = d[lson(p)] + d[rson(p)];
-    return ;
+    int mid = (l + r) >> 1;
+    build(ls(p), l, mid);
+    build(rs(p), mid + 1, r);
+    up(p);
 }
 
-void update(int l, int r, int v, int s, int t, int p) {
-    if (l <= s && t <= r) {
-        d[p] += (t - s + 1) * v;
-        laz[p] += v;
-        return ;
-    }
-    int mid = s + t >> 1;
-    if (laz[p]) {
-        d[lson(p)] += laz[p] * (mid - s + 1);
-        d[rson(p)] += laz[p] * (t - mid);
-        laz[lson(p)] += laz[p];
-        laz[rson(p)] += laz[p];
-        laz[p] = 0;
-    }
-    if (l <= mid)
-        update(l, r, v, s, mid, lson(p));
-    if (r > mid)
-        update(l, r, v, mid + 1, t, rson(p));
-    d[p] = d[lson(p)] + d[rson(p)];
+node query(int p, int L, int R) {
+    int l = t[p].l, r = t[p].r;
+    if (l == L && R == r)
+        return t[p];
+    down(p);
+    int mid = (l + r) >> 1;
+    if (R <= mid)
+        return query(ls(p), L, R);
+    else if (L > mid)
+        return query(rs(p), L, R);
+    else
+        return con(
+            query(ls(p), L, mid),
+            query(rs(p), mid + 1, R)
+        );
 }
 
-long long getsum(int l, int r, int s, int t, int p) {
-    if (l <= s && t <= r)
-        return d[p];
-    int mid = s + t >> 1;
-    if (laz[p]) {
-        d[lson(p)] += laz[p] * (mid - s + 1);
-        d[rson(p)] += laz[p] * (t - mid);
-        laz[lson(p)] += laz[p];
-        laz[rson(p)] += laz[p];
-        laz[p] = 0;
+void update(int p, int L, int R, int v) {
+    int l = t[p].l, r = t[p].r;
+    if (l == L && R == r)
+        return tag(p, v);
+    down(p);
+    int mid = (l + r) >> 1;
+    
+    if (R <= mid)
+        update(ls(p), L, R, v);
+    else if (L > mid)
+        update(rs(p), L, R, v);
+    else {
+        update(ls(p), L, mid, v);
+        update(rs(p), mid + 1, R, v);
     }
-    long long sum = 0;
-    if (l <= mid)
-        sum = getsum(l, r, s, mid, lson(p));
-    if (r > mid)
-        sum += getsum(l, r, mid + 1, t, rson(p));
-    return sum;
+
+    up(p);
 }
 
-int main() {
+signed main() {
     int n = read(), m = read();
-    for (int i = 1; i <= n; ++i)
-        a[i] = read();
-    build(1, n, 1);
+    build(1, 1, n);
+    
     while (m--) {
-        int op = read();
+        int op = read(), l = read(), r = read();
         if (op == 1) {
-            int x = read(), y = read(), k = read();
-            update(x, y, k, 1, n, 1);
-        } else if (op == 2) {
-            int x = read(), y = read();
-            printf("%lld\n", getsum(x, y, 1, n, 1));
+            int v = read();
+            update(1, l, r, v);
+        } else {
+            printf("%lld\n", query(1, l, r).sum);
         }
     }
+
     return 0;
 }

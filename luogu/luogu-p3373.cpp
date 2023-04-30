@@ -1,141 +1,126 @@
 /*
  * @Author: crab-in-the-northeast 
- * @Date: 2021-02-26 11:08:13 
+ * @Date: 2023-01-03 07:21:54 
  * @Last Modified by: crab-in-the-northeast
- * @Last Modified time: 2021-07-11 13:03:56
+ * @Last Modified time: 2023-01-03 08:30:20
  */
 #include <bits/stdc++.h>
-inline long long read() {
-    long long x = 0;
-    bool flag = true;
+#define int long long
+inline int read() {
+    int x = 0;
+    bool f = true;
     char ch = getchar();
-    while (ch < '0' || ch > '9') {
+    for (; !isdigit(ch); ch = getchar())
         if (ch == '-')
-            flag = false;
-        ch = getchar();
-    }
-    while (ch >= '0' && ch <= '9') {
+            f = false;
+    for (; isdigit(ch); ch = getchar())
         x = (x << 1) + (x << 3) + ch - '0';
-        ch = getchar();
-    }
-    if (flag)
-        return x;
-    return ~(x - 1);
+    return f ? x : (~(x - 1));
 }
 
-long long mod;
-const int maxn = 100005;
-long long a[maxn], val[maxn << 2], mul[maxn << 2], sum[maxn << 2];
+const int maxn = (int)1e5 + 5;
+const int mod = 571373;
+int sum[maxn << 2], der[maxn << 2], mul[maxn << 2];
 
-inline int lson(int p) {
+inline int ls(int p) {
     return p << 1;
 }
-
-inline int rson(int p) {
-    return (p << 1) | 1;
+inline int rs(int p) {
+    return p << 1 | 1;
 }
 
-inline void update(int p) {
-    val[p] = (val[lson(p)] + val[rson(p)]) % mod;
+inline void up(int p) {
+    sum[p] = (sum[ls(p)] + sum[rs(p)]) % mod;
 }
 
-void build(int l, int r, int p) {
+void build(int p, int l, int r) {
     mul[p] = 1;
-    sum[p] = 0;
     if (l == r) {
-        val[p] = a[l] % mod;
+        sum[p] = read();
         return ;
     }
-    int mid = l + r >> 1;
-    build(l, mid, lson(p));
-    build(mid + 1, r, rson(p));
-    update(p);
-    return ;
+    int mid = (l + r) >> 1;
+    build(ls(p), l, mid);
+    build(rs(p), mid + 1, r);
+    up(p);
 }
 
-void pushdown(int l, int r, int p) {
-    int mid = l + r >> 1, s = lson(p), t = rson(p);
-    val[s] = (val[s] * mul[p] + sum[p] * (mid - l + 1)) % mod;
-    val[t] = (val[t] * mul[p] + sum[p] * (r - mid)) % mod;
-    sum[s] = (sum[s] * mul[p] + sum[p]) % mod;
-    sum[t] = (sum[t] * mul[p] + sum[p]) % mod;
-    mul[s] = (mul[s] * mul[p]) % mod;
-    mul[t] = (mul[t] * mul[p]) % mod;
-    mul[p] = 1;
-    sum[p] = 0;
-    return ;
+inline void down(int p, int l, int r) {
+    if (mul[p] != 1) {
+        (mul[ls(p)] *= mul[p]) %= mod;
+        (der[ls(p)] *= mul[p]) %= mod;
+        (sum[ls(p)] *= mul[p]) %= mod; 
+        (mul[rs(p)] *= mul[p]) %= mod;
+        (der[rs(p)] *= mul[p]) %= mod;
+        (sum[rs(p)] *= mul[p]) %= mod;
+        mul[p] = 1;
+    }
+    if (der[p]) {
+        int mid = (l + r) >> 1;
+        (der[ls(p)] += der[p]) %= mod;
+        (sum[ls(p)] += der[p] * (mid - l + 1)) %= mod;
+        (der[rs(p)] += der[p]) %= mod;
+        (sum[rs(p)] += der[p] * (r - mid)) %= mod;
+        der[p] = 0;
+    }
 }
 
-void add(int l, int r, long long v, int s, int t, int p) {
-    int mid = s + t >> 1;
-    if (l <= s && t <= r) {
-        val[p] += v * (t - s + 1);
-        val[p] %= mod;
-        sum[p] += v;
-        sum[p] %= mod;
+void add(int p, int l, int r, int L, int R, int v) {
+    if (L <= l && r <= R) {
+        (der[p] += v) %= mod;
+        (sum[p] += v * (r - l + 1)) %= mod;
         return ;
     }
-    pushdown(s, t, p);
-    if (l <= mid)
-        add(l, r, v, s, mid, lson(p));
-    if (r > mid)
-        add(l, r, v, mid + 1, t, rson(p));
-    update(p);
-    return ;
+    down(p, l, r);
+    int mid = (l + r) >> 1;
+    if (L <= mid)
+        add(ls(p), l, mid, L, R, v);
+    if (R > mid)
+        add(rs(p), mid + 1, r, L, R, v);
+    up(p);
 }
 
-void multi(int l, int r, long long v, int s, int t, int p) {
-    int mid = s + t >> 1;
-    if (l <= s && t <= r) {
-        mul[p] *= v;
-        mul[p] %= mod;
-        sum[p] *= v;
-        sum[p] %= mod;
-        val[p] *= v;
-        val[p] %= mod;
+void multi(int p, int l, int r, int L, int R, int v) {
+    if (L <= l && r <= R) {
+        (mul[p] *= v) %= mod;
+        (der[p] *= v) %= mod;
+        (sum[p] *= v) %= mod;
         return ;
     }
-    pushdown(s, t, p);
-    if (l <= mid)
-        multi(l, r, v, s, mid, lson(p));
-    if (r > mid)
-        multi(l, r, v, mid + 1, t, rson(p));
-    update(p);
-    return ;
+    down(p, l, r);
+    int mid = (l + r) >> 1;
+    if (L <= mid)
+        multi(ls(p), l, mid, L, R, v);
+    if (R > mid)
+        multi(rs(p), mid + 1, r, L, R, v);
+    up(p);
 }
 
-long long getval(int l, int r, int s, int t, int p) {
-    int mid = s + t >> 1;
-    long long ans = 0;
-    if (l <= s && t <= r)
-        return val[p];
-    pushdown(s, t, p);
-    if (l <= mid)
-        ans = getval(l, r, s, mid, lson(p)) % mod;
-    if (r > mid)
-        ans += getval(l, r, mid + 1, t, rson(p)) % mod;
+int query(int p, int l, int r, int L, int R) {
+    if (L <= l && r <= R)
+        return sum[p];
+    down(p, l, r);
+    int mid = (l + r) >> 1, ans = 0;
+    if (L <= mid)
+        ans = query(ls(p), l, mid, L, R);
+    if (R > mid)
+        ans += query(rs(p), mid + 1, r, L, R);
     return ans % mod;
 }
 
-int main() {
-    int n = read(), m = read();
-    mod = read();
-    for (int i = 1; i <= n; ++i)
-        a[i] = read();
-    build(1, n, 1);
+signed main() {
+    int n = read(), m = read(); read();
+    build(1, 1, n);
     while (m--) {
-        int op = read();
+        int op = read(), l = read(), r = read();
         if (op == 1) {
-            int x = read(), y = read();
-            long long k = read();
-            multi(x, y, k, 1, n, 1);
+            int v = read();
+            multi(1, 1, n, l, r, v);
         } else if (op == 2) {
-            int x = read(), y = read();
-            long long k = read();
-            add(x, y, k, 1, n, 1);
-        } else if (op == 3) {
-            int x = read(), y = read();
-            printf("%lld\n", getval(x, y, 1, n, 1));
+            int v = read();
+            add(1, 1, n, l, r, v);
+        } else {
+            printf("%lld\n", query(1, 1, n, l, r));
         }
     }
     return 0;

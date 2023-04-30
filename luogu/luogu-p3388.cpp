@@ -1,82 +1,84 @@
 /*
  * @Author: crab-in-the-northeast 
- * @Date: 2022-10-03 11:27:31 
+ * @Date: 2023-02-27 08:32:20 
  * @Last Modified by: crab-in-the-northeast
- * @Last Modified time: 2022-10-03 11:50:43
+ * @Last Modified time: 2023-02-27 08:37:29
  */
 #include <bits/stdc++.h>
-
 inline int read() {
     int x = 0;
-    bool flag = true;
+    bool f = true;
     char ch = getchar();
-    while (!isdigit(ch)) {
+    for (; !isdigit(ch); ch = getchar())
         if (ch == '-')
-            flag = false;
-        ch = getchar();
-    }
-    while (isdigit(ch)) {
+            f = false;
+    for (; isdigit(ch); ch = getchar())
         x = (x << 1) + (x << 3) + ch - '0';
-        ch = getchar();
-    }
-    if(flag)
-        return x;
-    return ~(x - 1);
+    return f ? x : (~(x - 1));
+}
+inline bool gmi(int &a, int b) {
+    return b < a ? a = b, true : false;
 }
 
 const int maxn = (int)2e4 + 5;
 
 std :: vector <int> G[maxn];
-
+int deg[maxn];
 int dfn[maxn], low[maxn], times = 0;
-bool isc[maxn];
+std :: stack <int> s;
 
-inline bool gmi(int &a, int b) {
-    return b < a ? a = b, true : false;
-}
-
-void tarjan(int u, int fa) {
+void tarjan(int u) {
+    if (!G[u].size()) {
+        ++deg[u];
+        return ;
+    }
+    
     dfn[u] = low[u] = ++times;
-
-    int ch = 0;
+    s.push(u);
 
     for (int v : G[u]) {
         if (!dfn[v]) {
-            tarjan(v, u);
+            tarjan(v);
             gmi(low[u], low[v]);
-            if (low[v] >= dfn[u])
-                isc[u] = true;
-            ++ch;
-        } else if (v != fa)
+            if (low[v] == dfn[u]) {
+                ++deg[u];
+                for (; ;) {
+                    int x = s.top();
+                    s.pop();
+                    ++deg[x];
+                    if (x == v)
+                        break;
+                }
+            }
+        } else
             gmi(low[u], dfn[v]);
     }
-
-    if (fa == 0 && ch == 1)
-        isc[u] = false;
 }
 
 int main() {
     int n = read(), m = read();
     while (m--) {
         int u = read(), v = read();
+        if (u == v)
+            continue;
         G[u].push_back(v);
         G[v].push_back(u);
     }
 
     for (int u = 1; u <= n; ++u)
         if (!dfn[u])
-            tarjan(u, 0);
+            tarjan(u);
     
-    int tot = 0;
+    std :: vector <int> ans;
 
     for (int u = 1; u <= n; ++u)
-        if (isc[u])
-            ++tot;
+        if (deg[u] > 1)
+            ans.push_back(u);
     
-    printf("%d\n", tot);
-    for (int u = 1; u <= n; ++u)
-        if (isc[u])
-            printf("%d ", u);
-    
+    printf("%d\n", (int)ans.size());
+
+    for (int u : ans)
+        printf("%d ", u);
+    puts("");
     return 0;
 }

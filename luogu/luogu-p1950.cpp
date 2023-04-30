@@ -1,46 +1,65 @@
 /*
  * @Author: crab-in-the-northeast 
- * @Date: 2020-10-06 09:22:22 
+ * @Date: 2023-04-25 17:53:24 
  * @Last Modified by: crab-in-the-northeast
- * @Last Modified time: 2020-10-06 09:36:07
+ * @Last Modified time: 2023-04-25 18:04:25
  */
-#include <iostream>
-#include <cstdio>
-#include <cstring>
-#include <stack>
+#include <bits/stdc++.h>
+#define int long long
+inline int read() {
+    int x = 0;
+    bool f = true;
+    char ch = getchar();
+    for (; !isdigit(ch); ch = getchar())
+        if (ch == '-')
+            f = false;
+    for (; isdigit(ch); ch = getchar())
+        x = (x << 1) + (x << 3) + ch - '0';
+    return f ? x : (~(x - 1));
+}
+inline char rech() {
+    char ch = getchar();
+    while (!isgraph(ch))
+        ch = getchar();
+    return ch;
+}
 
-const long long maxn = 1005;
-const long long maxm = 1005;
+const int maxm = 1005;
 
-char a[maxn][maxm];
-int maxdraw[maxm], dp[maxm];
+int h[maxm], ple[maxm], nnge[maxm];
 
-std :: stack <long long> s;
-
-int main() {
-    long long n, m;
-    std :: scanf("%lld %lld", &n, &m);
-    for (long long i = 1; i <= n; ++i)
-        std :: scanf("%s", a[i] + 1);
-    
-    long long ans = n * m * (n + 1) * (m + 1) / 4;
-    for (long long i = 1; i <= n; ++i) {
-        while (!s.empty())
-            s.pop();
-        std :: memset(dp, 0, sizeof(dp));
-        
-        for (long long j = 1; j <= m; ++j) {
-            if (a[i][j] == '*')
-                maxdraw[j] = i;
-            while (!s.empty() && maxdraw[s.top()] <= maxdraw[j])
+signed main() {
+    int ans = 0, n = read(), m = read();
+    while (n--) {
+        for (int i = 1; i <= m; ++i)
+            h[i] = (rech() == '.') ? (h[i] + 1) : 0;
+        std :: stack <int> s;
+        for (int i = 1; i <= m; ++i) {
+            while (!s.empty() && h[i] <= h[s.top()]) {
+                nnge[s.top()] = i;
                 s.pop();
-            int k = s.empty() ? 0 : s.top();
-            dp[j] = dp[k] + maxdraw[j] * (j - k);
-            ans -= dp[j];
-            s.push(j);
+            }
+            s.push(i);
         }
+        while (!s.empty()) {
+            nnge[s.top()] = m + 1;
+            s.pop();
+        }
+        for (int i = m; i; --i) {
+            while (!s.empty() && h[i] < h[s.top()]) {
+                ple[s.top()] = i;
+                s.pop();
+            }
+            s.push(i);
+        }
+        while (!s.empty()) {
+            ple[s.top()] = 0;
+            s.pop();
+        }
+        
+        for (int i = 1; i <= m; ++i)
+            ans += h[i] * (i - ple[i]) * (nnge[i] - i);
     }
-
-    std :: printf("%lld\n", ans);
+    printf("%lld\n", ans);
     return 0;
 }

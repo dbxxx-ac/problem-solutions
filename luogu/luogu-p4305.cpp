@@ -2,13 +2,13 @@
  * @Author: crab-in-the-northeast 
  * @Date: 2020-09-06 13:22:06 
  * @Last Modified by: crab-in-the-northeast
- * @Last Modified time: 2020-09-06 14:01:17
+ * @Last Modified time: 2023-01-17 21:41:57
  */
 #include <iostream>
 #include <cstdio>
-#include <unordered_map>
+#include <unordered_set>
 
-std :: unordered_map <int, bool> m;
+std :: unordered_set <int> s;
 
 inline int read() {
     int x = 0, f = 1;
@@ -30,13 +30,13 @@ int main() {
     while (T--) {
         int n;
         n = read();
-        m.clear();
+        s.clear();
         while (n--) {
             int x;
             x = read();
-            if (!m[x]) {
+            if (!s.count(x)) {
                 std :: printf("%d ", x);
-                m[x] = true;
+                s.insert(x);
             }
         }
         putc('\n', stdout);

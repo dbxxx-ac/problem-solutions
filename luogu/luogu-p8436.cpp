@@ -1,58 +1,53 @@
 /*
  * @Author: crab-in-the-northeast 
- * @Date: 2022-10-05 03:23:24 
+ * @Date: 2023-02-27 08:49:45 
  * @Last Modified by: crab-in-the-northeast
- * @Last Modified time: 2022-10-05 03:37:05
+ * @Last Modified time: 2023-02-27 08:59:12
  */
 #include <bits/stdc++.h>
 inline int read() {
     int x = 0;
-    bool flag = true;
+    bool f = true;
     char ch = getchar();
-    while (!isdigit(ch)) {
+    for (; !isdigit(ch); ch = getchar())
         if (ch == '-')
-            flag = false;
-        ch = getchar();
-    }
-    while (isdigit(ch)) {
+            f = false;
+    for (; isdigit(ch); ch = getchar())
         x = (x << 1) + (x << 3) + ch - '0';
-        ch = getchar();
-    }
-    if(flag)
-        return x;
-    return ~(x - 1);
+    return f ? x : (~(x - 1));
 }
-
-const int maxn = (int)5e5 + 5;
-typedef std :: pair <int, int> pii;
-
-std :: vector <pii> G[maxn];
-std :: vector <int> ecc[maxn];
-int ent = 0;
-
-std :: stack <int> s;
-int dfn[maxn], low[maxn], times = 0;
 inline bool gmi(int &a, int b) {
     return b < a ? a = b, true : false;
 }
+const int maxn = (int)5e5 + 5;
 
-inline void tarjan(int u, int ls) {
-    dfn[u] = low[u] = ++times;
+typedef std :: pair <int, int> pii;
+std :: vector <pii> G[maxn];
+
+int low[maxn], dfn[maxn], times = 0;
+std :: stack <int> s;
+
+int ent = 0;
+std :: vector <int> ecc[maxn];
+
+void tarjan(int u, int ls) {
+    low[u] = dfn[u] = ++times;
     s.push(u);
-
+    
     for (pii e : G[u]) {
         int v = e.first, id = e.second;
+        if (id == ls)
+            continue;
         if (!dfn[v]) {
             tarjan(v, id);
             gmi(low[u], low[v]);
-        } else if (id != ls) {
+        } else
             gmi(low[u], dfn[v]);
-        }
     }
 
     if (low[u] == dfn[u]) {
         ++ent;
-        while (!s.empty()) {
+        for (; ;) {
             int x = s.top();
             s.pop();
             ecc[ent].push_back(x);
@@ -66,8 +61,8 @@ int main() {
     int n = read(), m = read();
     for (int i = 1; i <= m; ++i) {
         int u = read(), v = read();
-        G[u].emplace_back(v, i);
-        G[v].emplace_back(u, i);
+        G[u].push_back({v, i});
+        G[v].push_back({u, i});
     }
 
     for (int u = 1; u <= n; ++u)
@@ -75,7 +70,6 @@ int main() {
             tarjan(u, 0);
     
     printf("%d\n", ent);
-
     for (int i = 1; i <= ent; ++i) {
         printf("%d ", (int)ecc[i].size());
         for (int u : ecc[i])
